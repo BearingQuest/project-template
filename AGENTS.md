@@ -19,7 +19,7 @@ engineering baseline 2.0. Python 3.14, managed with uv.
   - `test_workflows.py` - every workflow and the ruleset files
   - `test_project_config.py` - `pyproject.toml` guardrails
   - `test_claude_settings.py` - `.claude/settings.json` keeps every deny, ask, Read() and Edit()
-    rule and the sandbox keys, and allows nothing
+    rule and the sandbox keys, excludes only `gh` from the sandbox, and allows nothing
   - `_proc.py` - the only place the tests start a process
 - `Makefile` - `make check` (ruff, mypy, pytest with the coverage floor), `make audit`
   (pip-audit, as in CI), `make hooks` (installs `.githooks/`); `make help` lists them
@@ -37,6 +37,11 @@ engineering baseline 2.0. Python 3.14, managed with uv.
   "`network.strictAllowlist` | Managed settings, `--settings`, user settings | The proxy ports,
   `allowedDomains`, and `WebFetch(domain:...)` allow rules". So this file's `allowedDomains` is
   ignored under strict mode and is kept only as the record of the hosts this project needs.
+  `gh` runs outside the sandbox (`sandbox.excludedCommands: ["gh *"]`, the only exclusion): inside it
+  `gh` cannot read its login in `~/.config/gh`. The deny and ask rules still apply to every `gh`
+  call, including denies on the token-printing commands (`gh auth token`, `--show-token`, `-t`).
+  Trade-off: an excluded `gh` has no filesystem or network limits, and only text-matched rules
+  limit it. See `docs/decisions.md`.
   Tested 2026-11-11: pypi.org returned 200; example.com was refused ("host is not on the allow
   list"); `make check` and `make audit` passed in the sandbox.
 - `.github/` - `workflows/ci.yml` (the five required checks), `rulesets/` (ruleset

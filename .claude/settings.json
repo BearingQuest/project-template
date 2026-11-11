@@ -55,7 +55,13 @@
       "Edit(/.claude/settings.json)",
       "Edit(/.claude/settings.local.json)",
       "Edit(~/.claude/settings.json)",
-      "Edit(//Library/Application Support/ClaudeCode/**)"
+      "Edit(//Library/Application Support/ClaudeCode/**)",
+      "Bash(gh auth token*)",
+      "Bash(gh * auth token*)",
+      "Bash(gh auth status *--show-token*)",
+      "Bash(gh * auth status *--show-token*)",
+      "Bash(gh auth status *-t*)",
+      "Bash(gh * auth status *-t*)"
     ],
     "ask": [
       "Bash(git push *)",
@@ -75,6 +81,9 @@
     "failIfUnavailable": true,
     "allowUnsandboxedCommands": false,
     "autoAllowBashIfSandboxed": false,
+    "excludedCommands": [
+      "gh *"
+    ],
     "filesystem": {
       "denyRead": [
         "~/.ai_post_env",
