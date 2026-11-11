@@ -57,11 +57,8 @@
       "Edit(~/.claude/settings.json)",
       "Edit(//Library/Application Support/ClaudeCode/**)",
       "Bash(gh auth token*)",
-      "Bash(gh * auth token*)",
       "Bash(gh auth status *--show-token*)",
-      "Bash(gh * auth status *--show-token*)",
-      "Bash(gh auth status *-t*)",
-      "Bash(gh * auth status *-t*)"
+      "Bash(gh auth status *-t*)"
     ],
     "ask": [
       "Bash(git push *)",

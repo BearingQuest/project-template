@@ -59,11 +59,8 @@ REQUIRED_DENY = [
     "Bash(gh release *)",
     # gh runs outside the sandbox, so nothing stops it printing its token but these
     "Bash(gh auth token*)",
-    "Bash(gh * auth token*)",
     "Bash(gh auth status *--show-token*)",
-    "Bash(gh * auth status *--show-token*)",
     "Bash(gh auth status *-t*)",
-    "Bash(gh * auth status *-t*)",
     # tags
     "Bash(git tag *)",
     "Bash(git * tag)",
@@ -169,6 +166,18 @@ def test_mode_is_disabled(settings: dict[str, Any], key: str) -> None:
 @pytest.mark.parametrize("rule", REQUIRED_DENY)
 def test_deny_rule_present(settings: dict[str, Any], rule: str) -> None:
     assert rule in settings["permissions"]["deny"]
+
+
+def test_no_option_first_gh_auth_deny(settings: dict[str, Any]) -> None:
+    # "Bash(gh * auth token*)" matches any gh command whose text mentions "auth token",
+    # including `gh pr create` with that phrase in its title or body, so it silently
+    # refuses legitimate calls. Only the plain "gh auth ..." forms may be denied.
+    option_first = [
+        rule
+        for rule in settings["permissions"]["deny"]
+        if rule.startswith("Bash(gh *") and "auth" in rule
+    ]
+    assert option_first == []
 
 
 @pytest.mark.parametrize("rule", REQUIRED_READ_DENY)
