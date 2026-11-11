@@ -18,10 +18,27 @@ engineering baseline 2.0. Python 3.14, managed with uv.
   - `test_hooks.py` - the pre-push hook and the Makefile recipes
   - `test_workflows.py` - every workflow and the ruleset files
   - `test_project_config.py` - `pyproject.toml` guardrails
+  - `test_claude_settings.py` - `.claude/settings.json` keeps every deny, ask, Read() and Edit()
+    rule and the sandbox keys, and allows nothing
   - `_proc.py` - the only place the tests start a process
 - `Makefile` - `make check` (ruff, mypy, pytest with the coverage floor), `make audit`
   (pip-audit, as in CI), `make hooks` (installs `.githooks/`); `make help` lists them
 - `.githooks/pre-push` - runs gitleaks on the commits being pushed
+- `.claude/settings.json` - shared Claude Code permissions (deny and ask rules, no allow
+  rules) and the sandbox pilot; agents never edit it. Network access is enforced by
+  `sandbox.network.strictAllowlist` plus `allowedDomains` in each developer's
+  `~/.claude/settings.json` (or managed settings), for example
+  `"sandbox": {"network": {"strictAllowlist": true, "allowedDomains": ["pypi.org",
+  "files.pythonhosted.org", "github.com", "api.github.com"]}}`. `strictAllowlist` is not in this
+  file: the settings reference gives it Scope "User or managed" ("Deny hosts outside the
+  allowlist instead of prompting",
+  https://code.claude.com/docs/en/settings-reference.md#sandbox-network-strictallowlist). The
+  sandboxing guide's locks table (https://code.claude.com/docs/en/sandboxing.md) reads:
+  "`network.strictAllowlist` | Managed settings, `--settings`, user settings | The proxy ports,
+  `allowedDomains`, and `WebFetch(domain:...)` allow rules". So this file's `allowedDomains` is
+  ignored under strict mode and is kept only as the record of the hosts this project needs.
+  Tested 2026-11-11: pypi.org returned 200; example.com was refused ("host is not on the allow
+  list"); `make check` and `make audit` passed in the sandbox.
 - `.github/` - `workflows/ci.yml` (the five required checks), `rulesets/` (ruleset
   JSON for the owner to apply; agents never apply it), `SECURITY.md`,
   `pull_request_template.md`
@@ -70,7 +87,7 @@ requests). All five must pass before merge.
 - Create or push tags, publish releases or packages.
 - Change DNS, domain or GitHub Pages settings (not used in this repo; the rule stays).
 - Edit `managed-settings.json`, `~/.claude/settings.json` or this repo's
-  `.claude/settings.json`.
+  `.claude/settings.json` (or `.claude/settings.local.json`), or run `bq-merge`.
 
 ## Untrusted input
 
