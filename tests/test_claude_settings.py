@@ -1,4 +1,7 @@
-"""AGENT-01..06: .claude/settings.json keeps every deny, ask and sandbox key, and allows nothing."""
+"""AGENT-01..06: .claude/settings.json keeps every deny, ask and sandbox key, and allows nothing.
+
+The only command excluded from the sandbox is gh.
+"""
 
 from __future__ import annotations
 
@@ -54,6 +57,10 @@ REQUIRED_DENY = [
     "Bash(gh repo create *)",
     "Bash(gh repo edit *)",
     "Bash(gh release *)",
+    # gh runs outside the sandbox, so nothing stops it printing its token but these
+    "Bash(gh auth token*)",
+    "Bash(gh auth status *--show-token*)",
+    "Bash(gh auth status *-t*)",
     # tags
     "Bash(git tag *)",
     "Bash(git * tag)",
@@ -95,6 +102,11 @@ REQUIRED_ASK = [
     "Bash(gh * api *)",
     "Bash(python3 *)",
 ]
+
+# gh cannot read its login in ~/.config/gh from inside the sandbox, so it runs
+# outside it. The entry needs the trailing " *": a bare "gh" matches only `gh` with
+# no arguments. Nothing else may be excluded; the deny and ask rules above still apply.
+SANDBOX_EXCLUDED_COMMANDS = ["gh *"]
 
 # Sandbox paths differ from Read()/Edit() rules: "/" is absolute, "~/" is home,
 # "./" is the project root.
@@ -156,6 +168,18 @@ def test_deny_rule_present(settings: dict[str, Any], rule: str) -> None:
     assert rule in settings["permissions"]["deny"]
 
 
+def test_no_option_first_gh_auth_deny(settings: dict[str, Any]) -> None:
+    # "Bash(gh * auth token*)" matches any gh command whose text mentions "auth token",
+    # including `gh pr create` with that phrase in its title or body, so it silently
+    # refuses legitimate calls. Only the plain "gh auth ..." forms may be denied.
+    option_first = [
+        rule
+        for rule in settings["permissions"]["deny"]
+        if rule.startswith("Bash(gh *") and "auth" in rule
+    ]
+    assert option_first == []
+
+
 @pytest.mark.parametrize("rule", REQUIRED_READ_DENY)
 def test_read_deny_rule_present(settings: dict[str, Any], rule: str) -> None:
     assert rule in settings["permissions"]["deny"]
@@ -190,6 +214,11 @@ def test_sandbox_list_is_exact(
 ) -> None:
     # Set equality: a path or host added without updating this test fails too.
     assert set(settings["sandbox"][section][key]) == expected
+
+
+def test_sandbox_excluded_commands_is_exact(settings: dict[str, Any]) -> None:
+    # List equality: any extra, missing or reordered entry fails.
+    assert settings["sandbox"]["excludedCommands"] == SANDBOX_EXCLUDED_COMMANDS
 
 
 def test_strict_allowlist_is_not_in_repo_file(settings: dict[str, Any]) -> None:
