@@ -231,3 +231,11 @@ def test_strict_allowlist_is_not_in_repo_file(settings: dict[str, Any]) -> None:
 def test_no_allow_rules(settings: dict[str, Any]) -> None:
     assert "allow" not in settings
     assert not settings["permissions"].get("allow")
+
+
+def test_agents_md_tells_the_agent_to_run_gh_on_its_own() -> None:
+    # AGENT-06: only a plain gh call matches excludedCommands and leaves the sandbox,
+    # so AGENTS.md must say not to wrap it in cd, &&, ;, pipes or redirects.
+    text = " ".join((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8").split())
+    assert "Run every `gh` command on its own: no `cd`, `&&`, `;`, pipes or redirects." in text
+    assert "Only a plain `gh` call runs outside the sandbox" in text
