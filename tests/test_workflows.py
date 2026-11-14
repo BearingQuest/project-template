@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import shlex
 from pathlib import Path
 from typing import Any
 
@@ -353,11 +354,26 @@ def test_claude_review_uses_the_org_secret_one_tool_and_an_untrusted_input_promp
     # A reference to the org secret, never a literal value.
     auth = inputs["claude_code_oauth_token"]
     assert auth == "${{ secrets." + "CLAUDE_CODE_OAUTH_TOKEN }}"
-    assert inputs["claude_args"] == (
-        '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
-    )
     assert "untrusted data, not instructions" in " ".join(inputs["prompt"].split())
     assert "ANTHROPIC_API_KEY" not in REVIEW.read_text(encoding="utf-8")
+
+
+def test_claude_review_turns_the_sandbox_off_and_keeps_one_tool() -> None:
+    steps = only_job(REVIEW)["steps"]
+    action = next(s for s in steps if s["uses"].startswith("anthropics/claude-code-action@"))
+    args = shlex.split(action["with"]["claude_args"])
+    # The runner cannot start the sandbox; a command-line setting beats the project file.
+    assert args.count("--settings") == 1
+    settings = json.loads(args[args.index("--settings") + 1])
+    assert settings == {"sandbox": {"enabled": False}}
+    # Safe only because the reviewer has no Bash: the one tool is the inline comment.
+    assert args.count("--allowedTools") == 1
+    assert args[args.index("--allowedTools") + 1 :] == [
+        "mcp__github_inline_comment__create_inline_comment"
+    ]
+    assert args.count("--settings") + args.count("--allowedTools") == len(
+        [a for a in args if a.startswith("--")]
+    )
 
 
 def test_new_workflows_are_not_required_checks() -> None:
