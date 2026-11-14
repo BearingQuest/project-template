@@ -1,0 +1,40 @@
+name: "pip-audit (daily)"
+
+# Daily pip-audit of uv.lock on main, so an advisory published against a
+# locked version shows up without waiting for the next pull request. Same
+# steps as the pip-audit job in ci.yml; the job name differs so it isn't
+# confused with that required check.
+# GitHub disables scheduled workflows in a public repo after 60 days with no
+# repository activity; re-enable it from the Actions tab if that happens.
+
+on:
+  schedule:
+    - cron: "23 7 * * *" # 07:23 UTC, off the hour (top-of-hour runs can be delayed)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One audit at a time; a manual run never cancels the scheduled one.
+concurrency:
+  group: pip-audit-daily
+  cancel-in-progress: false
+
+jobs:
+  pip-audit-daily:
+    name: pip-audit (daily)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          version: "0.13.1"
+      - name: Install pip-audit from uv.lock
+        run: uv sync --locked
+      - name: Audit locked dependencies
+        run: |
+          uv export --locked --format requirements-txt --no-emit-project --quiet --output-file requirements-audit.txt
+          uv run --locked pip-audit --strict --disable-pip -r requirements-audit.txt

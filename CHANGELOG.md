@@ -4,6 +4,13 @@ All notable changes to this project are recorded here, newest first.
 
 ## Unreleased
 
+- Workflows: daily pip-audit, Dependabot (uv and github-actions), OpenSSF Scorecard and
+  Claude review, none required; `release.yml` builds on a `v*` tag in a read-only job and
+  opens a draft release with the wheel, sdist and SBOM, each with a build-provenance
+  attestation, from a separate job; the notes are the tag's `CHANGELOG.md` section and the
+  build fails without one.
+- `make sbom`: CycloneDX SBOM of the locked runtime dependencies, with a test that no
+  dev-group package appears in it.
 - Sandbox: `gh` runs outside it (`excludedCommands: ["gh *"]`) so it can read its login;
   new denies on `gh auth token`, `--show-token` and `-t`; test requires `gh` to be the only
   exclusion.

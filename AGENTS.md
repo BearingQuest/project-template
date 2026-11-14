@@ -16,11 +16,15 @@ engineering baseline 2.0. Python 3.14, managed with uv.
 - `tests/` - pytest checks
   - `test_architecture.py` - keeps `core/` pure
   - `test_hooks.py` - the pre-push hook and the Makefile recipes
-  - `test_workflows.py` - every workflow and the ruleset files
+  - `test_workflows.py` - every workflow, `dependabot.yml` and the ruleset files
+  - `test_sbom.py` - `make sbom` lists the runtime packages and no dev-group package
+  - `test_release_notes.py` - `scripts/release_notes.py` and its no-fallback rule
   - `test_project_config.py` - `pyproject.toml` guardrails
   - `test_claude_settings.py` - `.claude/settings.json` keeps every deny, ask, Read() and Edit()
     rule and the sandbox keys, excludes only `gh` from the sandbox, and allows nothing
   - `_proc.py` - the only place the tests start a process
+- `scripts/release_notes.py` - writes a version's `CHANGELOG.md` section for the release; fails
+  if there is none (linted and type-checked by `make check`)
 - `Makefile` - `make check` (ruff, mypy, pytest with the coverage floor), `make audit`
   (pip-audit, as in CI), `make hooks` (installs `.githooks/`); `make help` lists them
 - `.githooks/pre-push` - runs gitleaks on the commits being pushed
@@ -44,8 +48,9 @@ engineering baseline 2.0. Python 3.14, managed with uv.
   limit it. See `docs/decisions.md`.
   Tested 2026-11-11: pypi.org returned 200; example.com was refused ("host is not on the allow
   list"); `make check` and `make audit` passed in the sandbox.
-- `.github/` - `workflows/ci.yml` (the five required checks), `rulesets/` (ruleset
-  JSON for the owner to apply; agents never apply it), `SECURITY.md`,
+- `.github/` - `workflows/ci.yml` (the five required checks); `pip-audit-daily.yml`,
+  `scorecard.yml`, `claude-review.yml` and `release.yml` (none required); `dependabot.yml`;
+  `rulesets/` (ruleset JSON for the owner to apply; agents never apply it), `SECURITY.md`,
   `pull_request_template.md`
 - `docs/decisions.md` - one row per plan change, approved exception or new tool
 - `CHANGELOG.md` - notable changes
@@ -62,6 +67,13 @@ engineering baseline 2.0. Python 3.14, managed with uv.
 
 `gitleaks` and `semgrep` upload SARIF to code scanning (not on fork pull
 requests). All five must pass before merge.
+
+Not required: `pip-audit-daily.yml` (daily), `scorecard.yml` (OpenSSF Scorecard),
+`claude-review.yml` (inline review comments) and `release.yml`. `release.yml` runs when
+Dusten pushes a `v*` tag: the read-only `build` job runs `uv build` and `make sbom` and
+needs a `## <version>` section in `CHANGELOG.md`; the `release` job, which has the write
+and OIDC tokens and runs none of that code, attests the files and creates a draft
+release. Dusten publishes the draft.
 
 ## Rules
 

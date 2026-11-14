@@ -43,7 +43,7 @@ branch = true
 
 [tool.mypy]
 strict = true
-files = ["src/project_template"]
+files = ["src/project_template", "scripts"]
 
 [tool.ruff]
 line-length = 100
