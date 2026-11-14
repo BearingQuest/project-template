@@ -68,6 +68,10 @@ engineering baseline 2.0. Python 3.14, managed with uv.
 `gitleaks` and `semgrep` upload SARIF to code scanning (not on fork pull
 requests). All five must pass before merge.
 
+To run `zizmor` locally, inside the sandbox (which blocks uv's default tool folder), at
+the version CI pins:
+`UV_TOOL_DIR=$TMPDIR uvx --exclude-newer 2026-11-03 zizmor@1.32.0 --offline .github`
+
 Not required: `pip-audit-daily.yml` (daily), `scorecard.yml` (OpenSSF Scorecard),
 `claude-review.yml` (inline review comments) and `release.yml`. `release.yml` runs when
 Dusten pushes a `v*` tag: the read-only `build` job runs `uv build` and `make sbom` and
@@ -82,6 +86,9 @@ release. Dusten publishes the draft.
 - Only `config.py` reads the environment. `core/` imports nothing outside the
   standard library and this package.
 - Never log secrets or free text from users, and never use `print`.
+- Run every `gh` command on its own: no `cd`, `&&`, `;`, pipes or redirects. You
+  already start in the repo. Only a plain `gh` call runs outside the sandbox, where it
+  can read its login.
 - Handle typed errors at the CLI boundary; users see a plain message, not a stack trace.
 - Pin every dependency exactly, to the newest release at least 7 days old, and add
   a row to `docs/decisions.md` for each tool or library you add.

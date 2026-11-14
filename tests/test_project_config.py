@@ -23,6 +23,15 @@ def test_coverage_floor_is_at_least_85_percent_on_the_package() -> None:
     assert floor >= 85
 
 
+def test_ruff_matches_the_baseline_block() -> None:
+    # REPO-03: dropping a rule family (for example S) must fail a test, not only weaken lint.
+    ruff = PYPROJECT["tool"]["ruff"]
+    assert ruff["line-length"] == 100
+    assert ruff["target-version"] == "py314"
+    assert ruff["lint"]["select"] == ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "T20"]
+    assert ruff["lint"]["per-file-ignores"] == {"tests/**": ["S101"]}
+
+
 def test_cli_script_and_exact_pins() -> None:
     assert PYPROJECT["project"]["scripts"] == {"pt": "project_template.cli:app"}
     pins = PYPROJECT["project"]["dependencies"] + PYPROJECT["dependency-groups"]["dev"]

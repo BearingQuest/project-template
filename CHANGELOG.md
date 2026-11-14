@@ -4,6 +4,10 @@ All notable changes to this project are recorded here, newest first.
 
 ## Unreleased
 
+- Baseline 2.0 audit fixes: `AGENTS.md` tells the agent to run `gh` on its own and documents the
+  sandbox-safe zizmor command; tests for both and for the ruff baseline block; `docs/decisions.md`
+  records "Meets engineering baseline 2.0", the mutation check, the gitleaks rescan and the GH-02
+  API defaults.
 - Workflows: daily pip-audit, Dependabot (uv and github-actions), OpenSSF Scorecard and
   Claude review, none required; `release.yml` builds on a `v*` tag in a read-only job and
   opens a draft release with the wheel, sdist and SBOM, each with a build-provenance
