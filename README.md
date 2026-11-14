@@ -38,6 +38,7 @@ never include secrets or free text from users.
 $ make help    # list the targets
 $ make check   # ruff lint, ruff format check, mypy (strict), pytest with an 85% coverage floor
 $ make audit   # pip-audit every package locked in uv.lock, as CI does
+$ make sbom    # CycloneDX SBOM of the runtime dependencies in dist/sbom.cdx.json
 $ make hooks   # use .githooks/pre-push, which runs gitleaks on the commits being pushed
 ```
 

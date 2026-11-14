@@ -11,9 +11,9 @@ def test_exclude_newer_pilot_and_python_version() -> None:
     assert PYPROJECT["project"]["requires-python"] == ">=3.14"
 
 
-def test_mypy_is_strict_on_the_package() -> None:
+def test_mypy_is_strict_on_the_package_and_the_scripts() -> None:
     assert PYPROJECT["tool"]["mypy"]["strict"] is True
-    assert PYPROJECT["tool"]["mypy"]["files"] == ["src/project_template"]
+    assert PYPROJECT["tool"]["mypy"]["files"] == ["src/project_template", "scripts"]
 
 
 def test_coverage_floor_is_at_least_85_percent_on_the_package() -> None:
