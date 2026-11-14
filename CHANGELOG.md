@@ -4,6 +4,9 @@ All notable changes to this project are recorded here, newest first.
 
 ## Unreleased
 
+- Claude review: `claude_args` adds `--settings '{"sandbox":{"enabled":false}}'` so the review
+  runs on a runner without bubblewrap or socat; the tool list is still the inline-comment tool
+  alone, and a test requires both.
 - Baseline 2.0 audit fixes: `AGENTS.md` tells the agent to run `gh` on its own and documents the
   sandbox-safe zizmor command; tests for both and for the ruff baseline block; `docs/decisions.md`
   records "Meets engineering baseline 2.0", the mutation check, the gitleaks rescan and the GH-02
