@@ -89,6 +89,20 @@ release. Dusten publishes the draft.
 - Run every `gh` command on its own: no `cd`, `&&`, `;`, pipes or redirects. You
   already start in the repo. Only a plain `gh` call runs outside the sandbox, where it
   can read its login.
+- Push a branch with `git push origin <branch>`. Never use `-u` or
+  `--set-upstream`: the sandbox can't write `.git/config`, so the push fails.
+- A test that needs a pseudo-terminal (pty) skips outside CI, with the reason in
+  the skip message, and runs in CI. The sandbox can't allocate a pty.
+- A script that starts a browser outside the e2e container (for example a
+  screenshot script) is run by the owner in a plain Terminal after reading it.
+  The sandbox can't start Chromium on macOS. Say so in the plan; don't try it.
+- Don't add `sandbox.network.allowLocalBinding` unless this repo's tests start a
+  local server; if they do, propose it in the plan with a decisions row.
+- When a planned change first adds a Python package or `docs/PRD.md` to a repo
+  that had none, a GUI, a GitHub Pages site, a release workflow or the first
+  release, or an AWS deploy or `infra/`, say in the plan that a baseline re-audit
+  is due and name the controls that start to apply. The owner decides when to
+  run it.
 - Handle typed errors at the CLI boundary; users see a plain message, not a stack trace.
 - Pin every dependency exactly, to the newest release at least 7 days old, and add
   a row to `docs/decisions.md` for each tool or library you add.
