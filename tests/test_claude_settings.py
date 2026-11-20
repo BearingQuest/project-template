@@ -1,4 +1,5 @@
-"""AGENT-01..06: .claude/settings.json keeps every deny, ask and sandbox key, and allows nothing.
+"""AGENT-01..06 and AGENT-08: .claude/settings.json keeps every deny, ask and sandbox key, and
+allows nothing; AGENTS.md keeps the rules the sandbox makes necessary.
 
 The only command excluded from the sandbox is gh.
 """
@@ -239,3 +240,45 @@ def test_agents_md_tells_the_agent_to_run_gh_on_its_own() -> None:
     text = " ".join((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8").split())
     assert "Run every `gh` command on its own: no `cd`, `&&`, `;`, pipes or redirects." in text
     assert "Only a plain `gh` call runs outside the sandbox" in text
+
+
+def test_agents_md_says_push_without_set_upstream() -> None:
+    # AGENT-08: -u and --set-upstream write .git/config, which the sandbox blocks,
+    # so AGENTS.md must give the plain push form.
+    text = " ".join((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8").split())
+    assert "git push origin <branch>" in text
+
+
+def test_agents_md_says_pty_tests_skip_outside_ci() -> None:
+    # AGENT-08: the sandbox cannot allocate a pty, so such a test must skip there
+    # (with a reason) instead of failing, and run in CI.
+    text = " ".join((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8").split())
+    assert "pseudo-terminal (pty) skips outside CI" in text
+
+
+def test_agents_md_says_browser_scripts_are_run_by_the_owner() -> None:
+    # AGENT-08: the sandbox cannot start Chromium on macOS, so the agent says so in
+    # the plan and the owner runs the script.
+    text = " ".join((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8").split())
+    assert "run by the owner in a plain Terminal" in text
+
+
+def test_agents_md_says_allow_local_binding_needs_a_local_server() -> None:
+    # AGENT-08: allowLocalBinding widens the sandbox, so AGENTS.md must say when
+    # (and only when) it may be proposed.
+    text = " ".join((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8").split())
+    assert "allowLocalBinding" in text
+
+
+def test_agents_md_flags_a_baseline_reaudit() -> None:
+    # AGENT-08: a scope change (new package, GUI, Pages site, release workflow, AWS
+    # deploy) brings new controls into play, so the plan must say a re-audit is due.
+    text = " ".join((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8").split())
+    assert "a baseline re-audit is due" in text
+
+
+def test_allow_local_binding_is_not_set(settings: dict[str, Any]) -> None:
+    # sandbox.network.allowLocalBinding lets sandboxed commands listen on local ports.
+    # Absence, not "is not True": turning it on, even as false, needs a change to this
+    # test and a docs/decisions.md row, and only when the tests start a local server.
+    assert "allowLocalBinding" not in settings["sandbox"]["network"]
