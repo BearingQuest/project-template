@@ -371,7 +371,10 @@ def test_claude_review_turns_the_sandbox_off_and_keeps_one_tool() -> None:
     assert args[args.index("--allowedTools") + 1 :] == [
         "mcp__github_inline_comment__create_inline_comment"
     ]
-    assert args.count("--settings") + args.count("--allowedTools") == len(
+    # The review model changes only through a reviewed PR: an exact ID, never an alias.
+    assert args.count("--model") == 1
+    assert args[args.index("--model") + 1] == "claude-sonnet-5-5"
+    assert args.count("--model") + args.count("--settings") + args.count("--allowedTools") == len(
         [a for a in args if a.startswith("--")]
     )
 

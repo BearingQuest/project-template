@@ -86,6 +86,9 @@ release. Dusten publishes the draft.
 - Only `config.py` reads the environment. `core/` imports nothing outside the
   standard library and this package.
 - Never log secrets or free text from users, and never use `print`.
+- Keep exclude-newer as the first key under [tool.uv]; never remove or loosen it to get a
+  newer version. If a security fix is newer than 7 days, propose a per-package
+  exclude-newer-package override and a decisions row, and stop for the owner.
 - Run every `gh` command on its own: no `cd`, `&&`, `;`, pipes or redirects. You
   already start in the repo. Only a plain `gh` call runs outside the sandbox, where it
   can read its login.
