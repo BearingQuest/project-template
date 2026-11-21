@@ -242,6 +242,16 @@ def test_agents_md_tells_the_agent_to_run_gh_on_its_own() -> None:
     assert "Only a plain `gh` call runs outside the sandbox" in text
 
 
+def test_agents_md_keeps_the_install_cooldown() -> None:
+    # The 7-day uv cooldown is only a guardrail if agents cannot loosen it to get a newer version.
+    text = " ".join((REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8").split())
+    assert (
+        "Keep exclude-newer as the first key under [tool.uv]; never remove or loosen it to get "
+        "a newer version. If a security fix is newer than 7 days, propose a per-package "
+        "exclude-newer-package override and a decisions row, and stop for the owner."
+    ) in text
+
+
 def test_agents_md_says_push_without_set_upstream() -> None:
     # AGENT-08: -u and --set-upstream write .git/config, which the sandbox blocks,
     # so AGENTS.md must give the plain push form.

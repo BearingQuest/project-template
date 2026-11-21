@@ -1,14 +1,42 @@
 import tomllib
 from pathlib import Path
 
-PYPROJECT = tomllib.loads(
-    (Path(__file__).resolve().parents[1] / "pyproject.toml").read_text(encoding="utf-8")
-)
+ROOT = Path(__file__).resolve().parents[1]
+PYPROJECT_TEXT = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+PYPROJECT = tomllib.loads(PYPROJECT_TEXT)
+
+
+def tool_uv_head() -> tuple[list[str], str]:
+    """The lines between the [tool.uv] header and its first key, and that key's line."""
+    lines = PYPROJECT_TEXT.splitlines()
+    start = lines.index("[tool.uv]") + 1
+    between: list[str] = []
+    for line in lines[start:]:
+        if line.strip() and not line.lstrip().startswith("#"):
+            return between, line
+        between.append(line)
+    raise AssertionError("[tool.uv] has no key")
 
 
 def test_exclude_newer_pilot_and_python_version() -> None:
     assert PYPROJECT["tool"]["uv"]["exclude-newer"] == "7 days"
     assert PYPROJECT["project"]["requires-python"] == ">=3.14"
+
+
+def test_exclude_newer_is_the_first_key_under_tool_uv() -> None:
+    _, first_key = tool_uv_head()
+    assert first_key == 'exclude-newer = "7 days"'
+
+
+def test_no_bracket_between_the_tool_uv_header_and_exclude_newer() -> None:
+    # Semgrep reads the table only up to the first bracket.
+    between, _ = tool_uv_head()
+    assert not any("[" in line or "]" in line for line in between)
+
+
+def test_lock_records_the_seven_day_span() -> None:
+    lock = (ROOT / "uv.lock").read_text(encoding="utf-8")
+    assert 'exclude-newer-span = "P7D"' in lock.splitlines()
 
 
 def test_mypy_is_strict_on_the_package_and_the_scripts() -> None:
