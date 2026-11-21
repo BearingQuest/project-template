@@ -22,7 +22,10 @@ engineering baseline 2.0. Python 3.14, managed with uv.
   - `test_project_config.py` - `pyproject.toml` guardrails
   - `test_claude_settings.py` - `.claude/settings.json` keeps every deny, ask, Read() and Edit()
     rule and the sandbox keys, excludes only `gh` from the sandbox, and allows nothing
+  - `test_readme.py` - README images: alt text, allowed sources, the lockup copies, and each
+    tape's Output
   - `_proc.py` - the only place the tests start a process
+- `docs/readme/` - README images and the demo tape (checked by `tests/test_readme.py`)
 - `scripts/release_notes.py` - writes a version's `CHANGELOG.md` section for the release; fails
   if there is none (linted and type-checked by `make check`)
 - `Makefile` - `make check` (ruff, mypy, pytest with the coverage floor), `make audit`

@@ -4,6 +4,7 @@ All notable changes to this project are recorded here, newest first.
 
 ## Unreleased
 
+- README family header, badges, demo GIF and diagram; tests/test_readme.py checks README images.
 - Claude review: `claude_args` adds `--settings '{"sandbox":{"enabled":false}}'` so the review
   runs on a runner without bubblewrap or socat; the tool list is still the inline-comment tool
   alone, and a test requires both.
